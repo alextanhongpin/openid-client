@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Index</title>
+
+	<style type="text/css">
+		
+	body {
+		font-family: Arial;
+		color: #222;
+	}
+
+	.core-button {
+		border: 1px solid #888;
+		padding: 10px;
+		border-radius: 5px;
+		text-decoration: none;
+		color: #222;
+	}
+
+
+
+	</style>
+</head>
+<body>
+
+<h1>Please Login to Proceed</h1>
+
+
+<a href='/oauth2/authorize' class='core-button'>Login with Core</a>
+<button id='register'>Register me</button>
+
+
+
+<script type="text/javascript">
+
+'use strict';
+
+const register = document.getElementById('register');
+register.addEventListener('click', (evt) => {
+
+	window.location.href = '/register?referrer=' + window.location.href;
+}, false);
+const accessToken = window.localStorage.access_token;
+const refreshToken = window.localStorage.refresh_token;
+
+// if (accessToken && refreshToken) {
+// 	window.location.href = '/home';
+// } else {
+
+// }
+function refreshTokenService(refreshToken) {
+	return fetch('/oauth2/token', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({
+			refreshToken: refreshToken
+		})
+	}).then(function(response) {
+		return response.json()
+	}).catch(function(err) {
+		console.log(err)
+		// Error :(
+	});
+}
+
+
+function validateToken(accessToken, refreshToken) {
+	return fetch('/oauth2/inspector', {
+		method: 'POST',
+		headers: {
+			//'Authorization': 'Authorization ' + accessToken, 
+				//'Content-Type': 'application/x-www-form-urlencoded'
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({
+			//refreshToken: refreshToken
+			token: accessToken,
+			token_type_hint: 'access_token'
+		})
+	}).then(function(response) {
+		return response.json()
+	}).catch(function(err) {
+
+	
+		// Error :(
+	});
+}
+
+validateToken(accessToken, refreshToken).then((data) => {
+	console.log('validateToken', data)
+
+	if (data && data.success) {
+
+		window.localStorage.access_token = data.access_token;
+		// do something
+	} else {
+
+		if (data.error_message === 'jwt expired') {
+			refreshTokenService(refreshToken).then((data) => {
+				console.log(data, 'refresh Token')
+				if (data && data.access_token) {
+					window.localStorage.access_token = data.access_token;
+					window.localStorage.refresh_token = data.refresh_token;
+
+				}
+			});
+		}
+		if (data && data.redirect_url) {
+		//	window.location.href = data.redirect_url;
+		}
+	}
+})
+
+</script>
+</body>
+</html>

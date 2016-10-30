@@ -1,0 +1,33 @@
+#<!DOCTYPE html>
+<html>
+<head>
+	<title>Home</title>
+</head>
+<body>
+
+
+You are at logged in!
+
+
+<input type="hidden" id='at' name="at" value='<%= access_token %>'>
+<input type="hidden" id='rt' name="rt" value='<%= refresh_token %>'>
+<script type="text/javascript">
+	
+
+const access_token = document.getElementById('at').value;
+const refresh_token = document.getElementById('rt').value;
+
+
+if (access_token && refresh_token) {
+	window.localStorage.access_token = access_token;
+	window.localStorage.refresh_token = refresh_token;
+}
+
+if (!window.localStorage.access_token) {
+	window.location.href = '/';
+
+}
+
+</script>
+</body>
+</html>
